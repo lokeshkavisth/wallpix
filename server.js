@@ -4,6 +4,7 @@ require("dotenv").config();
 const authRoutes = require("./src/routes/authRoutes");
 const wallpaperRoutes = require("./src/routes/wallpaperRoutes");
 const connectDB = require("./src/config/db");
+const errorHandler = require("./src/middlewares/errorHandler");
 
 const app = express();
 
@@ -21,6 +22,9 @@ app.use("/api/wallpapers", wallpaperRoutes);
 app.get("/", (req, res) => {
   res.send("Wallpaper App API");
 });
+
+// Error handling middleware should be added after routes
+app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;

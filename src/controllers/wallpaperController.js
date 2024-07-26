@@ -16,7 +16,7 @@ exports.uploadWallpaper = async (req, res) => {
     const { title, description, category } = req.body;
 
     if (!req.file) {
-      return res.status(400).json({ message: "Please upload an image" });
+      return next(new Error("Please upload an image"));
     }
 
     // Upload image to Cloudinary
@@ -35,8 +35,7 @@ exports.uploadWallpaper = async (req, res) => {
       data: wallpaper,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
 
@@ -94,8 +93,7 @@ exports.getWallpapers = async (req, res) => {
       data: wallpapers,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
 
@@ -115,8 +113,7 @@ exports.getPopularWallpapers = async (req, res) => {
       data: wallpapers,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
 
@@ -137,8 +134,7 @@ exports.getWallpaper = async (req, res) => {
       data: wallpaper,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
 
@@ -166,8 +162,7 @@ exports.addToFavorites = async (req, res) => {
       message: "Added to favorites",
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
 
@@ -188,7 +183,6 @@ exports.downloadWallpaper = async (req, res) => {
     // In a real-world scenario, you might want to stream the file instead of redirecting
     res.redirect(wallpaper.imageUrl);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    next(error);
   }
 };
