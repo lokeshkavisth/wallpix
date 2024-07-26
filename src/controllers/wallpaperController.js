@@ -40,15 +40,75 @@ exports.uploadWallpaper = async (req, res) => {
   }
 };
 
-// @desc    Get all wallpapers
+// @desc    Get all wallpapers with filtering and search
 // @route   GET /api/wallpapers
 // @access  Public
 exports.getWallpapers = async (req, res) => {
   try {
-    const wallpapers = await Wallpaper.find().populate(
-      "uploadedBy",
-      "username"
-    );
+    let query = {};
+
+    // Filter by category
+    if (req.query.category) {
+      query.category = req.query.category;
+    }
+
+    // Search by title
+    if (req.query.search) {
+      query.title = { $regex: req.query.search, $options: "i" };
+    }
+
+    // Filter by upload date
+    if (req.query.fromDate) {
+      query.createdAt = { $gte: new Date(req.query.fromDate) };
+    }
+
+    // Sort options
+    let sort = {};
+    if (req.query.sortBy) {
+      const parts = req.query.sortBy.split(":");
+      sort[parts[0]] = parts[1] === "desc" ? -1 : 1;
+    } else {
+      // Default sort by createdAt in descending order
+      sort = { createdAt: -1 };
+    }
+
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+
+    const total = await Wallpaper.countDocuments(query);
+    const wallpapers = await Wallpaper.find(query)
+      .sort(sort)
+      .skip(startIndex)
+      .limit(limit)
+      .populate("uploadedBy", "username");
+
+    res.json({
+      success: true,
+      count: wallpapers.length,
+      pagination: {
+        current: page,
+        total: Math.ceil(total / limit),
+      },
+      data: wallpapers,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// @desc    Get popular wallpapers
+// @route   GET /api/wallpapers/popular
+// @access  Public
+exports.getPopularWallpapers = async (req, res) => {
+  try {
+    const wallpapers = await Wallpaper.find()
+      .sort({ downloadCount: -1, favorites: -1 })
+      .limit(10)
+      .populate("uploadedBy", "username");
+
     res.json({
       success: true,
       count: wallpapers.length,
@@ -105,6 +165,28 @@ exports.addToFavorites = async (req, res) => {
       success: true,
       message: "Added to favorites",
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// @desc    Download wallpaper and increment download count
+// @route   GET /api/wallpapers/:id/download
+// @access  Public
+exports.downloadWallpaper = async (req, res) => {
+  try {
+    const wallpaper = await Wallpaper.findById(req.params.id);
+    if (!wallpaper) {
+      return res.status(404).json({ message: "Wallpaper not found" });
+    }
+
+    // Increment download count
+    wallpaper.downloadCount += 1;
+    await wallpaper.save();
+
+    // In a real-world scenario, you might want to stream the file instead of redirecting
+    res.redirect(wallpaper.imageUrl);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
