@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const authRoutes = require("./src/routes/authRoutes");
+const wallpaperRoutes = require("./src/routes/wallpaperRoutes");
 const connectDB = require("./src/config/db");
 
 const app = express();
@@ -15,6 +16,7 @@ connectDB();
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/wallpapers", wallpaperRoutes);
 
 app.get("/", (req, res) => {
   res.send("Wallpaper App API");
