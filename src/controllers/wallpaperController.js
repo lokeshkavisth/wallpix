@@ -1,6 +1,7 @@
-const Wallpaper = require("../models/Wallpaper");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
+
+const Wallpaper = require("../models/Wallpaper");
 
 // Configure Cloudinary
 cloudinary.config({
@@ -100,26 +101,6 @@ exports.getWallpapers = async (req, res) => {
   }
 };
 
-// @desc    Get popular wallpapers
-// @route   GET /api/wallpapers/popular
-// @access  Public
-exports.getPopularWallpapers = async (req, res) => {
-  try {
-    const wallpapers = await Wallpaper.find()
-      .sort({ downloadCount: -1, favorites: -1 })
-      .limit(10)
-      .populate("uploadedBy", "username");
-
-    res.json({
-      success: true,
-      count: wallpapers.length,
-      data: wallpapers,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // @desc    Get single wallpaper
 // @route   GET /api/wallpapers/:id
 // @access  Public
@@ -135,6 +116,26 @@ exports.getWallpaper = async (req, res) => {
     res.json({
       success: true,
       data: wallpaper,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get popular wallpapers
+// @route   GET /api/wallpapers/popular
+// @access  Public
+exports.getPopularWallpapers = async (req, res) => {
+  try {
+    const wallpapers = await Wallpaper.find()
+      .sort({ downloadCount: -1, favorites: -1 })
+      .limit(10)
+      .populate("uploadedBy", "username");
+
+    res.json({
+      success: true,
+      count: wallpapers.length,
+      data: wallpapers,
     });
   } catch (error) {
     next(error);

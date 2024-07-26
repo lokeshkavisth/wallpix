@@ -1,15 +1,16 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config({ path: "./config.env" });
-const authRoutes = require("./src/routes/authRoutes");
-const wallpaperRoutes = require("./src/routes/wallpaperRoutes");
-const connectDB = require("./src/config/db");
-const errorHandler = require("./src/middlewares/errorHandler");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
-const swaggerSpecs = require("./src/config/swagger");
+require("dotenv").config({ path: "./config.env" });
+
+const connectDB = require("./src/configs/db");
+const authRoutes = require("./src/routes/authRoutes");
+const wallpaperRoutes = require("./src/routes/wallpaperRoutes");
+const errorHandler = require("./src/middlewares/errorHandler");
+const swaggerSpecs = require("./src/configs/swagger");
 
 const app = express();
 const limiter = rateLimit({
@@ -17,7 +18,7 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 
-// Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(limiter);
@@ -34,12 +35,11 @@ connectDB();
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/wallpapers", wallpaperRoutes);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.get("/", (req, res) => {
-  res.send("Wallpaper App API");
+  res.send("Hello World!");
 });
-
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // Error handling middleware should be added after routes
 app.use(errorHandler);
