@@ -1,5 +1,6 @@
 const Wallpaper = require("../models/Wallpaper");
 const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 
 // Configure Cloudinary
 cloudinary.config({
@@ -34,6 +35,8 @@ exports.uploadWallpaper = async (req, res) => {
       success: true,
       data: wallpaper,
     });
+
+    fs.unlinkSync(req.file.path);
   } catch (error) {
     next(error);
   }
